@@ -1,41 +1,41 @@
 class TodoList {
-    constructor() {
-        this.list = document.getElementById('todo-list');
-        this.addButton = document.getElementById('todo-add');
+    constructor(selectorsIds = {}) {
+        this.list = document.getElementById(selectorsIds.list) || document.getElementById('todo-list');
+        this.addButton = document.getElementById(selectorsIds.addButton) || document.getElementById('todo-add');
         this.items = [];
         this.loadList();
         this.attachListeners();
     }
 
     attachListeners() {
-        this.addButton.addEventListener('click', (event) => {
-            this.addTodoItem();
+        this.addButton.addEventListener('click', () => {
+            this.addItemNode();
         });
 
         document.addEventListener('focusout', (event) => {
             if (event.target && event.target.classList.contains('todo-text')) {
-                this.saveTodoItem(event.target);
+                this.saveItem(event.target);
             }
         });
 
         document.addEventListener('click', (event) => {
             if (event.target && event.target.classList.contains('todo-text')) {
-                this.editTodoItem(event.target);
+                this.editItem(event.target);
             }
 
             if (event.target && event.target.classList.contains('todo-delete')) {
-                this.removeTodoItem(event.target.parentNode.parentNode);
+                this.removeItem(event.target.parentNode.parentNode);
             }
 
             if (event.target && event.target.classList.contains('todo-status')) {
-                this.toggleStatus(event.target);
+                this.toggleItemStatus(event.target);
             }
         });
     }
 
-    toggleStatus(checkbox) {
+    toggleItemStatus(checkbox) {
         const itemNode = checkbox.parentNode.parentNode.parentNode;
-        let itemIndex = this.items.findIndex((obj => obj.id == itemNode.getAttribute('id')));
+        const itemIndex = this.items.findIndex((item => item.id == itemNode.getAttribute('id')));
 
         if (itemNode.classList.contains('todo-done')) {
             itemNode.classList.remove('todo-done');
@@ -53,7 +53,7 @@ class TodoList {
         this.storeList();
     }
 
-    removeTodoItem(itemNode) {
+    removeItem(itemNode) {
         this.items = this.items.filter((item) => {
             return item.id !== itemNode.getAttribute('id');
         });
@@ -62,53 +62,38 @@ class TodoList {
         itemNode.remove();
     }
 
-    editTodoItem(input) {
+    editItem(input) {
         // this.toggleFocus(input, true);
     }
 
-    addTodoItem() {
+    addItemNode() {
         const node = TodoItem.buildNode();
-        node.classList.add('editable');
         this.list.append(node);
 
+        node.classList.add('editable');
         node.querySelector('.todo-text').focus();
     }
 
-    saveTodoItem(input) {
+    saveItem(input) {
         const itemNode = input.parentNode.parentNode;
 
         if (input.value.length < 3) {
             itemNode.remove();
-            this.removeTodoItem(itemNode);
+            this.removeItem(itemNode);
             return;
         }
 
-        // this.toggleFocus(input, false);
-
-        let itemIndex = this.items.findIndex((obj => obj.id == itemNode.getAttribute('id')));
+        const itemIndex = this.items.findIndex((item => item.id == itemNode.getAttribute('id')));
 
         if (itemIndex >= 0) {
             this.items[itemIndex].name = input.value;
         }
         else {
-            const todoItem = new TodoItem(itemNode.getAttribute('id'), input.value, null, []);
-            this.items.push(todoItem);
+            this.items.push(new TodoItem(itemNode.getAttribute('id'), input.value, null, []));
         }
 
         this.storeList();
     }
-
-    // toggleFocus(element, set) {
-    //     const todoItem = element.parentNode.parentNode,
-    //           label = todoItem.querySelector('.todo-label');
-
-    //     if (set) {
-    //         todoItem.classList.add('editable');
-    //     }
-    //     else {
-    //         todoItem.classList.remove('editable');
-    //     }
-    // }
 
     loadList() {
         this.items = JSON.parse(localStorage.getItem('todoList')) || [];
@@ -153,7 +138,7 @@ class TodoItem {
         li.classList.add('mdc-list-item');
         li.setAttribute('id', TodoItem.generateUid());
         li.setAttribute('role', 'checkbox');
-        li.innerHTML = TodoItem.nodeTemplate.trim();
+        li.innerHTML = TodoItem.getNodeTemplate().trim();
 
         return li;
     }
@@ -167,7 +152,8 @@ class TodoItem {
         return node;
     }
 
-    static nodeTemplate = `<span class="mdc-list-item__ripple"></span>
+    static getNodeTemplate() {
+        return `<span class="mdc-list-item__ripple"></span>
     <span class="mdc-list-item__graphic">
       <div class="mdc-checkbox">
         <input type="checkbox"
@@ -192,4 +178,5 @@ class TodoItem {
       <button class="mdc-icon-button material-icons todo-delete">delete</button>
     </span>
   `;
+    }
 }
