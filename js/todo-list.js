@@ -31,6 +31,22 @@ class TodoList {
                 this.toggleItemStatus(event.target);
             }
         });
+
+        document.addEventListener('keydown', (event) => {
+            const key = event.keyCode || event.charCode;
+
+            if (key != 8 && key != 46) {
+                return;
+            }
+
+            const itemNode = event.target.parentNode.parentNode;
+        
+            if (event.target && event.target.classList.contains('todo-text')) {
+                if (event.target.value.length - 1 < 0 && itemNode.previousSibling) {
+                    itemNode.previousSibling.querySelector('.todo-text').focus();
+                }
+            }
+        });
     }
 
     toggleItemStatus(checkbox) {
@@ -134,19 +150,18 @@ class TodoItem {
     }
 
     static buildNode() {
-        let li = document.createElement('li');
-        li.classList.add('mdc-list-item');
-        li.setAttribute('id', TodoItem.generateUid());
-        li.setAttribute('role', 'checkbox');
-        li.innerHTML = TodoItem.getNodeTemplate().trim();
+        const node = document.createElement('li');
 
-        return li;
+        node.classList.add('mdc-list-item');
+        node.setAttribute('id', TodoItem.generateUid());
+        node.setAttribute('role', 'checkbox');
+        node.innerHTML = TodoItem.getNodeTemplate().trim();
+
+        return node;
     }
 
     static setNodeData(node, name, date = null, labels = []) {
-        const input = node.querySelector('.todo-text'),
-            label = node.querySelector('.todo-label');
-
+        const input = node.querySelector('.todo-text');
         input.value = name;
 
         return node;
@@ -171,7 +186,7 @@ class TodoItem {
     </span>
     <div class="mdc-text-field text-field mdc-text-field--fullwidth mdc-text-field--no-label mdc-ripple-upgraded todo-input"
                 style="--mdc-ripple-fg-size:720px; --mdc-ripple-fg-scale:1.68237; --mdc-ripple-fg-translate-start:-290.5px, -316px; --mdc-ripple-fg-translate-end:240px, -332px;">
-                <input type="text" placeholder="Write your todo here..." class="mdc-text-field__input todo-text"
+                <input type="text" placeholder="Write your todo here (min. 3 characters)" class="mdc-text-field__input todo-text"
                     aria-label="">
             </div>
     <span class="mdc-list-item__meta">
