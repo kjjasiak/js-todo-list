@@ -53,6 +53,7 @@ class TodoList {
 
         if (event.target && event.target.classList.contains('todo-text')) {
             if (event.target.value.length - 1 < 0 && itemNode.previousSibling) {
+                event.preventDefault();
                 itemNode.previousSibling.querySelector('.todo-text').focus();
             }
         }

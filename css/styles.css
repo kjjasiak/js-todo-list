@@ -51,6 +51,10 @@ body {
     white-space: pre-wrap;
 }
 
+.todo-input {
+    width: 100%;
+}
+
 li.todo-done .todo-input {
     text-decoration: line-through;
 }
