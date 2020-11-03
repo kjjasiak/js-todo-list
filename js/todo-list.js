@@ -3,6 +3,7 @@ class TodoList {
         this.list = document.getElementById(selectorsIds.list) || document.getElementById('todo-list');
         this.addButton = document.getElementById(selectorsIds.addButton) || document.getElementById('todo-add');
         this.items = [];
+
         this.loadList();
         this.attachListeners();
     }
@@ -35,18 +36,33 @@ class TodoList {
         document.addEventListener('keydown', (event) => {
             const key = event.keyCode || event.charCode;
 
-            if (key != 8 && key != 46) {
-                return;
-            }
-
-            const itemNode = event.target.parentNode.parentNode;
-        
-            if (event.target && event.target.classList.contains('todo-text')) {
-                if (event.target.value.length - 1 < 0 && itemNode.previousSibling) {
-                    itemNode.previousSibling.querySelector('.todo-text').focus();
-                }
+            switch(key) {
+                case 8:
+                case 46:
+                    this.onItemBackspaceKey(event);
+                    break;
+                case 13:
+                    this.onItemEnterKey(event);
+                    break;
             }
         });
+    }
+
+    onItemBackspaceKey(event) {
+        const itemNode = event.target.parentNode.parentNode;
+
+        if (event.target && event.target.classList.contains('todo-text')) {
+            if (event.target.value.length - 1 < 0 && itemNode.previousSibling) {
+                itemNode.previousSibling.querySelector('.todo-text').focus();
+            }
+        }
+    }
+
+    onItemEnterKey(event) {
+        if (event.target && event.target.classList.contains('todo-text')) {
+            event.target.blur();
+            this.addItemNode();
+        }
     }
 
     toggleItemStatus(checkbox) {
@@ -76,6 +92,8 @@ class TodoList {
 
         this.storeList();
         itemNode.remove();
+
+        this.toggleNoItemsMsg();
     }
 
     editItem(input) {
@@ -85,6 +103,8 @@ class TodoList {
     addItemNode() {
         const node = TodoItem.buildNode();
         this.list.append(node);
+
+        this.toggleNoItemsMsg();
 
         node.classList.add('editable');
         node.querySelector('.todo-text').focus();
@@ -96,6 +116,9 @@ class TodoList {
         if (input.value.length < 3) {
             itemNode.remove();
             this.removeItem(itemNode);
+
+            this.toggleNoItemsMsg();
+
             return;
         }
 
@@ -120,6 +143,15 @@ class TodoList {
         localStorage.setItem('todoList', JSON.stringify(this.items));
     }
 
+    toggleNoItemsMsg() {
+        if (this.list.querySelectorAll('li').length === 0) {
+            document.getElementById('todo-list-empty').innerHTML = 'No items to show';
+        }
+        else {
+            document.getElementById('todo-list-empty').innerHTML = '';
+        }
+    }
+
     constructNodes() {
         for (let item of this.items) {
             let node = TodoItem.buildNode();
@@ -133,6 +165,8 @@ class TodoList {
 
             this.list.append(node);
         }
+
+        this.toggleNoItemsMsg();
     }
 }
 
